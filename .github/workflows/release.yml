@@ -1,0 +1,41 @@
+name: Publish release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check version tag
+        shell: pwsh
+        run: |
+          $version = (Get-Content VERSION -Raw).Trim()
+          if ($env:GITHUB_REF_NAME -ne "v$version") {
+            throw 'The tag does not match VERSION.'
+          }
+      - name: Build, test and package
+        shell: pwsh
+        run: ./build.ps1 -RunTests -Package
+      - name: Publish executable and portable package
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $version = (Get-Content VERSION -Raw).Trim()
+          $arguments = @(
+            'release', 'create', $env:GITHUB_REF_NAME,
+            'artifacts/AutoScrollWheel.exe',
+            "artifacts/AutoScrollWheel-v$version-win.zip",
+            'artifacts/SHA256SUMS.txt',
+            '--verify-tag',
+            '--title', "自动滚轮 $env:GITHUB_REF_NAME",
+            '--notes-file', 'CHANGELOG.md'
+          )
+          gh @arguments
+          if ($LASTEXITCODE -ne 0) { throw 'Release publication failed.' }

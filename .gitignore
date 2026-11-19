@@ -1,0 +1,12 @@
+/artifacts/
+/bin/
+/obj/
+/.vs/
+*.user
+*.suo
+*.exe
+*.dll
+*.pdb
+*.zip
+Thumbs.db
+Desktop.ini

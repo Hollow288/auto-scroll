@@ -1,0 +1,28 @@
+name: Build and test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build, test and package
+        shell: pwsh
+        run: ./build.ps1 -RunTests -Package
+      - name: Save build files
+        uses: actions/upload-artifact@v4
+        with:
+          name: auto-scroll-windows
+          if-no-files-found: error
+          path: |
+            artifacts/AutoScrollWheel.exe
+            artifacts/AutoScrollWheel-*-win.zip
+            artifacts/SHA256SUMS.txt
