@@ -91,3 +91,5 @@ GitHub Actions 会自动编译、运行回归检查，然后创建 Release，并
 - `AutoScrollWheel.exe`
 - `AutoScrollWheel-v版本号-win.zip`
 - `SHA256SUMS.txt`
+
+也可以在 GitHub 的 **Actions → Publish release → Run workflow** 中填写已存在的版本标签，手动启动发布。

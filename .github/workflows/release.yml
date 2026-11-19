@@ -3,6 +3,13 @@ name: Publish release
 on:
   push:
     tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing version tag to publish
+        required: true
+        default: v1.2.0
+        type: string
 
 permissions:
   contents: write
@@ -10,13 +17,17 @@ permissions:
 jobs:
   release:
     runs-on: windows-latest
+    env:
+      RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RELEASE_TAG }}
       - name: Check version tag
         shell: pwsh
         run: |
           $version = (Get-Content VERSION -Raw).Trim()
-          if ($env:GITHUB_REF_NAME -ne "v$version") {
+          if ($env:RELEASE_TAG -ne "v$version") {
             throw 'The tag does not match VERSION.'
           }
       - name: Build, test and package
@@ -29,12 +40,12 @@ jobs:
         run: |
           $version = (Get-Content VERSION -Raw).Trim()
           $arguments = @(
-            'release', 'create', $env:GITHUB_REF_NAME,
+            'release', 'create', $env:RELEASE_TAG,
             'artifacts/AutoScrollWheel.exe',
             "artifacts/AutoScrollWheel-v$version-win.zip",
             'artifacts/SHA256SUMS.txt',
             '--verify-tag',
-            '--title', "自动滚轮 $env:GITHUB_REF_NAME",
+            '--title', "自动滚轮 $env:RELEASE_TAG",
             '--notes-file', 'CHANGELOG.md'
           )
           gh @arguments
